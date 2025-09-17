@@ -13,6 +13,30 @@ from manim_voiceover.helper import chunks, remove_bookmarks
 
 # SCRIPT_FILE_PATH = "media/script.txt"
 
+def replace_punctuation_with_space(text: str) -> str:
+    """
+    将字符串中的句子分隔标点符号替换为空格。
+
+    Args:
+        text (str): 输入的字符串。
+
+    Returns:
+        str: 替换标点符号后的新字符串。
+    """
+    # 使用正则表达式匹配常见的中文和英文标点符号
+    # 包括逗号, 句号, 叹号, 问号, 分号等等
+    # `[，。！？；：,.]` 是一个字符集，会匹配其中任何一个字符
+    # `+` 表示匹配一个或多个这样的字符
+
+    punctuation_pattern = r'[，。！？；,.!?;]+'
+
+    # 使用 re.sub() 函数将匹配到的所有标点符号替换成一个空格
+    # 如果字符串中有连续的标点符号，例如 "Hello...world"，这个函数会把它们替换成一个空格
+
+    cleaned_text = re.sub(punctuation_pattern, ' ', text)
+
+    return cleaned_text
+
 
 class VoiceoverScene(Scene):
     """A scene class that can be used to add voiceover to a scene."""
@@ -69,7 +93,8 @@ class VoiceoverScene(Scene):
         dict_ = self.speech_service._wrap_generate_from_text(text, **kwargs)
         tracker = VoiceoverTracker(self, dict_, self.speech_service.cache_dir)
         self.renderer.skip_animations = self.renderer._original_skipping_status
-        self.add_sound(str(Path(self.speech_service.cache_dir) / dict_["final_audio"]))
+        self.add_sound(
+            str(Path(self.speech_service.cache_dir) / dict_["final_audio"]))
         self.current_tracker = tracker
 
         # if self.create_script:
@@ -103,6 +128,8 @@ class VoiceoverScene(Scene):
             max_subcaption_len (int, optional): Maximum number of characters for a subcaption. Subcaptions that are longer are split into chunks that are smaller than `max_subcaption_len`. Defaults to 70.
             subcaption_buff (float, optional): The duration between split subcaption chunks in seconds. Defaults to 0.1.
         """
+        # 这里增加对中文标点符号的处理（因为中文不使用空格进行分隔，而是使用标点）
+        subcaption = replace_punctuation_with_space(subcaption)
         subcaption = " ".join(subcaption.split())
         n_chunk = ceil(len(subcaption) / max_subcaption_len)
         tokens = subcaption.split(" ")
@@ -180,7 +207,8 @@ class VoiceoverScene(Scene):
             Generator[VoiceoverTracker, None, None]: The voiceover tracker object.
         """
         if text is None and ssml is None:
-            raise ValueError("Please specify either a voiceover text or SSML string.")
+            raise ValueError(
+                "Please specify either a voiceover text or SSML string.")
 
         try:
             if text is not None:
