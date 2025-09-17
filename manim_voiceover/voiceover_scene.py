@@ -28,7 +28,7 @@ def replace_punctuation_with_space(text: str) -> str:
     # `[，。！？；：,.]` 是一个字符集，会匹配其中任何一个字符
     # `+` 表示匹配一个或多个这样的字符
 
-    punctuation_pattern = r'[，。！？；,.!?;]+'
+    punctuation_pattern = r'[，。！？；、：,.!?;:]+'
 
     # 使用 re.sub() 函数将匹配到的所有标点符号替换成一个空格
     # 如果字符串中有连续的标点符号，例如 "Hello...world"，这个函数会把它们替换成一个空格
